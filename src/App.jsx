@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
-const API = "https://tools.tmtyl.com/whiteboard-api";
-const WHITEBOARD = "https://whiteboard.tmtyl.com";
+const API = "https://tools.tmtyl.studio/whiteboard-api";
+const WHITEBOARD = "https://whiteboard.tmtyl.studio";
 
 const PROJECTS = ["All", "Pacer", "MG Philippines", "Maxicare", "Yamaha", "Deej & Noele", "Internal"];
 
