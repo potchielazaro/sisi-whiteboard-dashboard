@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const API = "https://tools.tmtyl.studio/whiteboard-api";
-const WHITEBOARD = "https://whiteboard.tmtyl.studio";
+const API = "https://tools.tmtyl.com/whiteboard-api";
+const WHITEBOARD = "https://whiteboard.tmtyl.com";
 
-const PROJECTS = ["All", "Pacer", "MG Philippines", "Maxicare", "Yamaha", "Deej & Noele", "Internal"];
+const DEFAULT_PROJECTS = ["Pacer", "MG Philippines", "Maxicare", "Yamaha", "Deej & Noele", "Internal"];
 
 function timeAgo(dateStr) {
   const diff = (Date.now() - new Date(dateStr)) / 1000;
@@ -32,6 +32,12 @@ export default function Dashboard() {
   const [deleteId, setDeleteId] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Dynamic projects state
+  const [projects, setProjects] = useState(DEFAULT_PROJECTS);
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("");
+  const newProjectInputRef = useRef(null);
+
   // ── Fetch canvases ──────────────────────────────────────────────────────────
   async function fetchCanvases() {
     try {
@@ -49,6 +55,13 @@ export default function Dashboard() {
 
   useEffect(() => { fetchCanvases(); }, []);
 
+  // Focus the new project input when it appears
+  useEffect(() => {
+    if (showNewProject && newProjectInputRef.current) {
+      newProjectInputRef.current.focus();
+    }
+  }, [showNewProject]);
+
   // ── Create canvas ───────────────────────────────────────────────────────────
   async function createCanvas() {
     if (!newName.trim()) return;
@@ -65,11 +78,30 @@ export default function Dashboard() {
       setNewName("");
       setNewProject("Internal");
       setShowNew(false);
+      setShowNewProject(false);
+      setNewProjectName("");
     } catch (err) {
       alert(err.message);
     } finally {
       setCreating(false);
     }
+  }
+
+  // ── Add new project ─────────────────────────────────────────────────────────
+  function confirmNewProject() {
+    const name = newProjectName.trim();
+    if (!name) return;
+    if (!projects.includes(name)) {
+      setProjects([...projects, name]);
+    }
+    setNewProject(name);
+    setShowNewProject(false);
+    setNewProjectName("");
+  }
+
+  function cancelNewProject() {
+    setShowNewProject(false);
+    setNewProjectName("");
   }
 
   // ── Delete canvas ───────────────────────────────────────────────────────────
@@ -109,6 +141,7 @@ export default function Dashboard() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap');
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #111; }
@@ -120,6 +153,9 @@ export default function Dashboard() {
         .filter-btn:hover { background: #1a1a1a !important; }
         input, select { outline: none; }
         input::placeholder { color: #444; }
+        .new-project-row { animation: slideDown 0.15s ease both; }
+        .add-project-btn { background: none; border: 1px dashed #2a2a2a; color: #444; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
+        .add-project-btn:hover { border-color: #444; color: #888; }
       `}</style>
 
       {/* Header */}
@@ -291,32 +327,79 @@ export default function Dashboard() {
       {/* New canvas modal */}
       {showNew && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}
-          onClick={() => !creating && setShowNew(false)}>
+          onClick={() => { if (!creating) { setShowNew(false); setShowNewProject(false); setNewProjectName(""); } }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "#0e0e0e", border: "1px solid #1c1c1c", borderRadius: 10, padding: 32, width: 400 }}>
             <div style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 300, marginBottom: 24, color: "#fff" }}>new canvas</div>
+
+            {/* Canvas name */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, color: "#444", marginBottom: 6, letterSpacing: "0.08em" }}>CANVAS NAME</div>
               <input
                 autoFocus
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && createCanvas()}
+                onKeyDown={e => e.key === "Enter" && !showNewProject && createCanvas()}
                 placeholder="e.g. Brand Discovery Board"
                 style={{ width: "100%", background: "#111", border: "1px solid #222", borderRadius: 6, padding: "10px 14px", color: "#fff", fontSize: 14, fontFamily: "'DM Mono', monospace" }}
               />
             </div>
+
+            {/* Project */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 11, color: "#444", marginBottom: 6, letterSpacing: "0.08em" }}>PROJECT</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <div style={{ fontSize: 11, color: "#444", letterSpacing: "0.08em" }}>PROJECT</div>
+                {!showNewProject && (
+                  <button className="add-project-btn" onClick={() => setShowNewProject(true)}>
+                    + project
+                  </button>
+                )}
+              </div>
+
+              {/* Inline new project input */}
+              {showNewProject && (
+                <div className="new-project-row" style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                  <input
+                    ref={newProjectInputRef}
+                    value={newProjectName}
+                    onChange={e => setNewProjectName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") confirmNewProject();
+                      if (e.key === "Escape") cancelNewProject();
+                    }}
+                    placeholder="project name"
+                    style={{
+                      flex: 1, background: "#111", border: "1px solid #3a3a3a", borderRadius: 6,
+                      padding: "8px 12px", color: "#fff", fontSize: 13, fontFamily: "'DM Mono', monospace",
+                    }}
+                  />
+                  <button
+                    onClick={confirmNewProject}
+                    disabled={!newProjectName.trim()}
+                    style={{
+                      background: newProjectName.trim() ? "#fff" : "#1a1a1a",
+                      color: newProjectName.trim() ? "#000" : "#444",
+                      border: "none", borderRadius: 6, padding: "8px 14px",
+                      fontSize: 12, fontFamily: "'DM Mono', monospace", cursor: "pointer",
+                    }}
+                  >add</button>
+                  <button
+                    onClick={cancelNewProject}
+                    style={{ background: "none", border: "1px solid #222", color: "#555", borderRadius: 6, padding: "8px 10px", fontSize: 12, fontFamily: "'DM Mono', monospace", cursor: "pointer" }}
+                  >✕</button>
+                </div>
+              )}
+
               <select
                 value={newProject}
                 onChange={e => setNewProject(e.target.value)}
                 style={{ width: "100%", background: "#111", border: "1px solid #222", borderRadius: 6, padding: "10px 14px", color: "#fff", fontSize: 13, fontFamily: "'DM Mono', monospace", cursor: "pointer" }}
               >
-                {PROJECTS.filter(p => p !== "All").map(p => <option key={p} value={p}>{p}</option>)}
+                {projects.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
+
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button onClick={() => setShowNew(false)} disabled={creating}
+              <button onClick={() => { setShowNew(false); setShowNewProject(false); setNewProjectName(""); }} disabled={creating}
                 style={{ background: "none", border: "1px solid #222", color: "#555", padding: "8px 20px", borderRadius: 6, fontSize: 13, fontFamily: "'DM Mono', monospace", cursor: "pointer" }}>
                 cancel
               </button>
