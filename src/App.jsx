@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 const API = "https://tools.tmtyl.studio/whiteboard-api";
 const WHITEBOARD = "https://whiteboard.tmtyl.studio";
 
-const DEFAULT_PROJECTS = ["Pacer", "MG Philippines", "Maxicare", "Yamaha", "Deej & Noele", "Internal"];
+const DEFAULT_PROJECTS = ["Internal"];
 
 function timeAgo(dateStr) {
   const diff = (Date.now() - new Date(dateStr)) / 1000;
