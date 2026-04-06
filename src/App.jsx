@@ -334,8 +334,14 @@ export default function Dashboard() {
               {filtered.map((c, i) => (
                 <div key={c.id} className="canvas-card" style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 18, display: "flex", flexDirection: "column", gap: 12, animationDelay: `${i * 0.04}s` }}>
                   <div style={{ background: CARD2, borderRadius: 10, height: 72, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 64, fontWeight: 800, color: "#2a2a2a", lineHeight: 1, userSelect: "none" }}>
-    {c.name[0]?.toUpperCase() || "C"}
+  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 48, fontWeight: 800, color: "#2a2a2a", lineHeight: 1, userSelect: "none", letterSpacing: "-0.02em" }}>
+    {(() => {
+      const words = c.name.trim().split(/\s+/);
+      if (words.length >= 2) {
+        return (words[0][0] + words[1][0]).toUpperCase();
+      }
+      return (words[0][0] + (words[0][1] || words[0][0])).toUpperCase();
+    })()}
   </span>
 </div>
                   <div style={{ flex: 1 }}>
