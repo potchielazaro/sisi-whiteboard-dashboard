@@ -333,7 +333,11 @@ export default function Dashboard() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
               {filtered.map((c, i) => (
                 <div key={c.id} className="canvas-card" style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 18, display: "flex", flexDirection: "column", gap: 12, animationDelay: `${i * 0.04}s` }}>
-                  <div style={{ background: CARD2, borderRadius: 10, height: 72, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: "#2a2a2a" }}>▭</div>
+                  <div style={{ background: CARD2, borderRadius: 10, height: 72, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 64, fontWeight: 800, color: "#2a2a2a", lineHeight: 1, userSelect: "none" }}>
+    {c.name[0]?.toUpperCase() || "C"}
+  </span>
+</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 500, color: "#e0e0e0", marginBottom: 6, lineHeight: 1.3 }}>{c.name}</div>
                     <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
